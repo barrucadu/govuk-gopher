@@ -5,6 +5,7 @@ import enum
 class Elem(enum.Enum):
     HEADING = enum.auto()
     TEXT = enum.auto()
+    LINK = enum.auto()
     WEB_LINK = enum.auto()
 
 
@@ -39,6 +40,17 @@ def text(html):
     return {
         'type': Elem.TEXT,
         'text': '\n'.join(lines).strip(),
+    }
+
+
+def link(text, target):
+    """Construct an internal link.
+    """
+
+    return {
+        'type': Elem.LINK,
+        'text': text,
+        'target': target,
     }
 
 

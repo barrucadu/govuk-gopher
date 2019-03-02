@@ -115,7 +115,12 @@ def render(host, port, content_item):
         sections.append([chunk])
 
     chunks = []
+    linklist = []
     for item in content_item.body:
+        if linklist != [] and item['type'] not in [Elem.LINK, Elem.WEB_LINK]:
+            chunks.append(linklist)
+            linklist = []
+
         if item['type'] == Elem.HEADING:
             chunks.append([f'i# {item["text"]}\r\n'])
         elif item['type'] == Elem.TEXT:
@@ -124,11 +129,16 @@ def render(host, port, content_item):
                 for lline in wordwrap(line):
                     chunk.append(f'i{lline}\r\n')
             chunks.append(chunk)
+        elif item['type'] == Elem.LINK:
+            linklist.append(
+                f'1{item["text"]}\t{item["target"]}\t{host}\t{port}\r\n')
         elif item['type'] == Elem.WEB_LINK:
-            chunks.append([
-                f'h{item["text"]} (HTTP link)\tURL:{item["target"]}\t\t\r\n'])
+            linklist.append(
+                f'h{item["text"]} (HTTP link)\tURL:{item["target"]}\t\t\r\n')
         else:
             raise BadMarkup(item['type'])
+    if linklist != []:
+        chunks.append(linklist)
     sections.append(chunks)
 
     chunks = []

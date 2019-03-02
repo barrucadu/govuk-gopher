@@ -154,3 +154,63 @@ def parse_details_guide(details):
         body.append(markup.text(part['body']))
 
     return body
+
+
+def parse_details_organisation(details):
+    """Parse an organisation content item details hash."""
+
+    body = []
+
+    body.append(markup.text(details['body']))
+
+    if details.get('foi_exempt'):
+        body.append(markup.text(
+            'This organisation is EXEMPT from freedom-of-information requests.'))
+
+    info_pages = []
+    for page in details.get('ordered_corporate_information_pages') or []:
+        if page['href'][0] == '/':
+            if '?' in page['href']:
+                continue
+            else:
+                info_pages.append(markup.link(page['title'], page['href']))
+        else:
+            info_pages.append(markup.web_link(page['title'], page['href']))
+    if info_pages != []:
+        body.append(markup.heading('Information pages'))
+        body.extend(info_pages)
+
+    featured_documents = details.get('ordered_featured_documents') or []
+    if featured_documents != []:
+        body.append(markup.heading('Featured documents'))
+        for page in featured_documents:
+            body.append(markup.link(page['title'], page['href']))
+
+    for (
+        key,
+        heading) in [
+        ('ordered_ministers',
+         'Ministers'),
+        ('ordered_board_members',
+         'Board members'),
+        ('ordered_military_personnel',
+         'Military personnel'),
+        ('ordered_traffic_commissioners',
+         'Traffic commissioners'),
+        ('ordered_chief_professional_officers',
+         'Chief professional officers'),
+        ('ordered_special_representatives',
+         'Special representatives')]:
+        people = details.get(key) or []
+        if people != []:
+            body.append(markup.heading(heading))
+            for person in people:
+                prefix = person.get('name_prefix')
+                if prefix:
+                    name = f'{prefix} {person["name"]}'
+                else:
+                    name = person['name']
+                href = person.get('role_href') or person['href']
+                body.append(markup.link(f'{name}, {person["role"]}', href))
+
+    return body
