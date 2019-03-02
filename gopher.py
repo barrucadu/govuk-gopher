@@ -91,35 +91,56 @@ def render(content_item):
     """Render a content item as a gopher menu.
     """
 
-    menu = [
-        f'i{content_item.title}\r\n',
-        f'i{content_item.updated_at}\r\n',
+    sections = []
+
+    section_divider = [
         f'i\r\n',
         f'i-------------------------------------------------------------------------------\r\n',
         f'i\r\n',
     ]
-    for line in wordwrap(content_item.description):
-        menu.append(f'i{line}\r\n')
-    menu.extend([
-        f'i\r\n',
-        f'i-------------------------------------------------------------------------------\r\n',
-        f'i\r\n',
-    ])
 
+    chunk_divider = [f'i\r\n']
+
+    sections.append([[
+        f'i{content_item.title}\r\n',
+        f'i{content_item.updated_at}\r\n',
+    ]])
+
+    if content_item.description != '':
+        chunk = []
+        for line in wordwrap(content_item.description):
+            chunk.append(f'i{line}\r\n')
+        sections.append([chunk])
+
+    chunks = []
     for item in content_item.body:
         if item['type'] == Elem.HEADING:
-            menu.append(f'i# {item["text"]}\r\n')
-            menu.append('i\r\n')
+            chunks.append([f'i# {item["text"]}\r\n'])
         elif item['type'] == Elem.TEXT:
+            chunk = []
             for line in item['text'].split('\n'):
                 for lline in wordwrap(line):
-                    menu.append(f'i{lline}\r\n')
+                    chunk.append(f'i{lline}\r\n')
+            chunks.append(chunk)
         elif item['type'] == Elem.WEB_LINK:
-            menu.append('i\r\n')
-            menu.append(
-                f'h{item["text"]} (HTTP link)\tURL:{item["target"]}\t\t\r\n')
-            menu.append('i\r\n')
+            chunks.append([
+                f'h{item["text"]} (HTTP link)\tURL:{item["target"]}\t\t\r\n'])
         else:
             raise BadMarkup(item['type'])
+    sections.append(chunks)
+
+    menu = []
+
+    first_section = True
+    for section in sections:
+        if not first_section:
+            menu.extend(section_divider)
+        first_chunk = True
+        for chunk in section:
+            if not first_chunk:
+                menu.extend(chunk_divider)
+            menu.extend(chunk)
+            first_chunk = False
+        first_section = False
 
     return ''.join(menu)
