@@ -17,7 +17,7 @@ def usage_message(host, port):
         'iFor example:\r\n'
         f'1Tax your vehicle\t/vehicle-tax\t{host}\t{port}\r\n'
         f'1The Civil Service code\t/government/publications/civil-service-code/the-civil-service-code\t{host}\t{port}\r\n'
-    )
+        f'1Ministry of Defence\t/government/organisations/ministry-of-defence\t{host}\t{port}\r\n')
 
 
 def generic_error(title, message):
