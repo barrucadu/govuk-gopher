@@ -4,6 +4,7 @@ from govuk.api import fetch_content_item
 import govuk.content_schemas as schemas
 import gopher
 import asyncio
+import os
 import re
 import sys
 import traceback
@@ -61,4 +62,7 @@ def run(ip='127.0.0.1', port=70):
 
 
 if __name__ == '__main__':
-    run(port=7070)
+    ip = os.getenv('IP', '127.0.0.1')
+    port = int(os.getenv('PORT', '70'))
+
+    run(ip=ip, port=port)
