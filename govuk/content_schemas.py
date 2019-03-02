@@ -8,6 +8,7 @@ ContentItem = namedtuple(
 Links = namedtuple('Links',
                    ['parent',
                     'explore',
+                    'people',
                     'organisations',
                     'related_items'])
 
@@ -91,6 +92,10 @@ def parse_links(links):
     go(links.get('taxons') or [], explore, all_links)
     go(links.get('mainstream_browse_pages') or [], explore, all_links)
 
+    people = []
+    go(links.get('ministers') or [], people, all_links)
+    go(links.get('people') or [], people, all_links)
+
     organisations = []
     go(links.get('organisations') or [], organisations, all_links)
     go(links.get('ordered_child_organisations') or [], organisations, all_links)
@@ -103,6 +108,7 @@ def parse_links(links):
     return Links(
         parent=parent,
         explore=explore,
+        people=people,
         organisations=organisations,
         related_items=related,
     )

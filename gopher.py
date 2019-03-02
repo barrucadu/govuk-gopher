@@ -158,6 +158,14 @@ def render(host, port, content_item):
                 port,
                 content_item.links.explore))
 
+    if content_item.links.people != []:
+        chunks.append(['iRelated people:\r\n'])
+        chunks.append(
+            render_links_as_chunk(
+                host,
+                port,
+                content_item.links.people))
+
     if content_item.links.organisations != []:
         chunks.append(['iRelated organisations:\r\n'])
         chunks.append(
