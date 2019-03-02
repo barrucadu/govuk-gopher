@@ -76,3 +76,9 @@ def parse_details_transaction(details):
         body.append(markup.text(details['other_ways_to_apply']))
 
     return body
+
+
+def parse_details_html_publication(details):
+    """Parse an html_publication content item details hash."""
+
+    return [markup.text(details['body'])]
