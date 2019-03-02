@@ -140,3 +140,15 @@ def parse_details_answer(details):
     """Parse an answer content item details hash."""
 
     return [markup.text(details['body'])]
+
+
+def parse_details_guide(details):
+    """Parse a guide content item details hash."""
+
+    body = []
+
+    for part in details['parts']:
+        body.append(markup.heading(part['title']))
+        body.append(markup.text(part['body']))
+
+    return body
