@@ -69,7 +69,7 @@ def parse_type_transaction(raw):
 
     return ContentItem(
         title=raw['title'],
-        description=raw['description'],
+        description=raw.get('description', ''),
         updated_at=raw['public_updated_at'],
         body=body,
     )
