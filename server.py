@@ -23,7 +23,7 @@ async def handler(reader, writer):
     elif BASE_PATH_PATTERN.match(request):
         try:
             content_item = fetch_content_item(request)
-            response = gopher.render(content_item)
+            response = gopher.render(ip, port, content_item)
         except schemas.UnknownDocumentType as e:
             response = gopher.bad_content_message(
                 request, f'This page is of type "{e.args[0]}", which is not supported.')

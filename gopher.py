@@ -89,7 +89,7 @@ def wordwrap(string, colwidth=80):
     return out
 
 
-def render(content_item):
+def render(host, port, content_item):
     """Render a content item as a gopher menu.
     """
 
@@ -131,6 +131,40 @@ def render(content_item):
             raise BadMarkup(item['type'])
     sections.append(chunks)
 
+    chunks = []
+    if content_item.links.parent is not None:
+        chunks.append(['iParent:\r\n'])
+        chunks.append(
+            render_links_as_chunk(
+                host,
+                port,
+                [content_item.links.parent]))
+
+    if content_item.links.explore != []:
+        chunks.append(['iExplore this topic:\r\n'])
+        chunks.append(
+            render_links_as_chunk(
+                host,
+                port,
+                content_item.links.explore))
+
+    if content_item.links.organisations != []:
+        chunks.append(['iOrganisations:\r\n'])
+        chunks.append(
+            render_links_as_chunk(
+                host,
+                port,
+                content_item.links.organisations))
+
+    if content_item.links.related_items != []:
+        chunks.append(['iRelated items:\r\n'])
+        chunks.append(
+            render_links_as_chunk(
+                host,
+                port,
+                content_item.links.related_items))
+    sections.append(chunks)
+
     menu = []
 
     first_section = True
@@ -146,3 +180,12 @@ def render(content_item):
         first_section = False
 
     return ''.join(menu)
+
+
+def render_links_as_chunk(host, port, links):
+    """Render some links as a chunk."""
+
+    chunk = []
+    for link in links:
+        chunk.append(f'1{link.title}\t{link.base_path}\t{host}\t{port}\r\n')
+    return chunk

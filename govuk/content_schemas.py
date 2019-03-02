@@ -3,7 +3,15 @@ from collections import namedtuple
 
 ContentItem = namedtuple(
     'ContentItem', [
-        'title', 'description', 'updated_at', 'body'])
+        'title', 'description', 'updated_at', 'body', 'links'])
+
+Links = namedtuple('Links',
+                   ['parent',
+                    'explore',
+                    'organisations',
+                    'related_items'])
+
+Link = namedtuple('Link', ['title', 'base_path'])
 
 
 class NoDocumentType(Exception):
@@ -49,9 +57,53 @@ def parse_raw(raw):
             description=raw.get('description') or '',
             updated_at=raw['public_updated_at'],
             body=body,
+            links=parse_links(raw.get('links') or {})
         )
     except Exception as e:
         raise MalformedContentItem(e)
+
+
+def parse_links(links):
+    """Parse a links hash.  Only some of the links are included."""
+
+    def go(links, out_links, all_links):
+        for link in links:
+            it = Link(
+                title=link['title'],
+                base_path=link['base_path'],
+            )
+            if it.base_path in all_links:
+                continue
+            out_links.append(it)
+            all_links.append(it.base_path)
+
+    all_links = []
+
+    raw_parents = links.get('parent') or []
+    if raw_parents == []:
+        parent = None
+    else:
+        parent = []
+        go([raw_parents[0]], parent, all_links)
+        parent = parent[0]
+
+    explore = []
+    go(links.get('taxons') or [], explore, all_links)
+    go(links.get('mainstream_browse_pages') or [], explore, all_links)
+
+    organisations = []
+    go(links.get('organisations') or [], organisations, all_links)
+
+    related = []
+    go(links.get('ordered_related_items') or [], related, all_links)
+    go(links.get('suggested_ordered_related_items') or [], related, all_links)
+
+    return Links(
+        parent=parent,
+        explore=explore,
+        organisations=organisations,
+        related_items=related,
+    )
 
 
 def parse_details_transaction(details):
