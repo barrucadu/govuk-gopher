@@ -46,7 +46,7 @@ def parse_raw(raw):
         body = globals()[document_type_parser](raw['details'])
         return ContentItem(
             title=raw['title'],
-            description=raw.get('description', ''),
+            description=raw.get('description') or '',
             updated_at=raw['public_updated_at'],
             body=body,
         )
