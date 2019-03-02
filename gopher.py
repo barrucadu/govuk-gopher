@@ -15,7 +15,9 @@ def usage_message(port):
         'i\r\n'
         'iRequest any path to get a rendition of that page on GOV.UK as a Gopher directory listing.\r\n'
         'iFor example:\r\n'
-        f'1Tax your vehicle\t/vehicle-tax\t\t{port}\r\n')
+        f'1Tax your vehicle\t/vehicle-tax\t\t{port}\r\n'
+        f'1The Civil Service code\t/government/publications/civil-service-code/the-civil-service-code\t\t{port}\r\n'
+    )
 
 
 def generic_error(title, message):
