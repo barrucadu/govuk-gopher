@@ -93,6 +93,8 @@ def parse_links(links):
 
     organisations = []
     go(links.get('organisations') or [], organisations, all_links)
+    go(links.get('ordered_child_organisations') or [], organisations, all_links)
+    go(links.get('ordered_high_profile_groups') or [], organisations, all_links)
 
     related = []
     go(links.get('ordered_related_items') or [], related, all_links)

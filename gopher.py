@@ -149,7 +149,7 @@ def render(host, port, content_item):
                 content_item.links.explore))
 
     if content_item.links.organisations != []:
-        chunks.append(['iOrganisations:\r\n'])
+        chunks.append(['iRelated organisations:\r\n'])
         chunks.append(
             render_links_as_chunk(
                 host,
