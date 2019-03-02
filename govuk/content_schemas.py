@@ -134,3 +134,9 @@ def parse_details_html_publication(details):
     """Parse an html_publication content item details hash."""
 
     return [markup.text(details['body'])]
+
+
+def parse_details_answer(details):
+    """Parse an answer content item details hash."""
+
+    return [markup.text(details['body'])]
