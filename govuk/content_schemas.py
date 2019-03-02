@@ -52,13 +52,15 @@ def parse_raw(raw):
         raise UnknownDocumentType(document_type)
 
     try:
-        body = globals()[document_type_parser](raw['details'])
+        details = raw.get('details') or {}
+        links = raw.get('links') or {}
+        body = globals()[document_type_parser](details, links)
         return ContentItem(
             title=raw['title'],
             description=raw.get('description') or '',
             updated_at=raw['public_updated_at'],
             body=body,
-            links=parse_links(raw.get('links') or {})
+            links=parse_links(links)
         )
     except Exception as e:
         raise MalformedContentItem(e)
@@ -114,7 +116,7 @@ def parse_links(links):
     )
 
 
-def parse_details_transaction(details):
+def parse_details_transaction(details, _links):
     """Parse a transaction content item details hash."""
 
     body = []
@@ -138,25 +140,25 @@ def parse_details_transaction(details):
     return body
 
 
-def parse_details_html_publication(details):
+def parse_details_html_publication(details, _links):
     """Parse an html_publication content item details hash."""
 
     return [markup.text(details['body'])]
 
 
-def parse_details_answer(details):
+def parse_details_answer(details, _links):
     """Parse an answer content item details hash."""
 
     return [markup.text(details['body'])]
 
 
-def parse_details_news_story(details):
+def parse_details_news_story(details, _links):
     """Parse a news_story content item details hash."""
 
     return [markup.text(details['body'])]
 
 
-def parse_details_guide(details):
+def parse_details_guide(details, _links):
     """Parse a guide content item details hash."""
 
     body = []
@@ -168,7 +170,7 @@ def parse_details_guide(details):
     return body
 
 
-def parse_details_organisation(details):
+def parse_details_organisation(details, _links):
     """Parse an organisation content item details hash."""
 
     body = []
@@ -224,5 +226,58 @@ def parse_details_organisation(details):
                     name = person['name']
                 href = person.get('role_href') or person['href']
                 body.append(markup.link(f'{name}, {person["role"]}', href))
+
+    return body
+
+
+def parse_details_mainstream_browse_page(details, links):
+    """Parse a mainstream_browse_page content item details hash.
+
+    Retrieves page titles from the links hash.
+    """
+
+    body = []
+
+    empty = True
+
+    all_links = []
+    all_links.extend(links.get('children') or [])
+    all_links.extend(links.get('second_level_browse_pages') or [])
+    all_links.extend(links.get('top_level_browse_pages') or [])
+
+    all_links_by_base_path = {link['base_path']: link for link in all_links}
+    all_links_by_content_id = {link['content_id']: link for link in all_links}
+
+    for group in details.get('groups') or []:
+        group_links = []
+        for base_path in group['contents']:
+            link = all_links_by_base_path.get(base_path)
+            if link:
+                group_links.append(
+                    markup.link(
+                        link['title'],
+                        link['base_path']))
+        if group_links != []:
+            body.append(markup.heading(group['name']))
+            body.extend(group_links)
+            empty = False
+
+    second_level_browse_pages = []
+    for content_id in details.get('ordered_second_level_browse_pages') or []:
+        link = all_links_by_content_id.get(content_id)
+        if link:
+            second_level_browse_pages.append(
+                markup.link(link['title'], link['base_path']))
+    if second_level_browse_pages != []:
+        if not empty:
+            body.append(markup.heading('Subtopics'))
+        body.extend(second_level_browse_pages)
+        empty = False
+
+    if empty:
+        links = links.get('second_level_browse_pages') or links.get(
+            'top_level_browse_pages') or []
+        for link in links:
+            body.append(markup.link(link['title'], link['base_path']))
 
     return body
