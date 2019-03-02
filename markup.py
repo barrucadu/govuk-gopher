@@ -31,6 +31,8 @@ def text(html):
         # strip abbreviations, which can't be disabled...
         if line[0:4] == '  *[':
             continue
+        # replace fancy quotes
+        line = line.replace('‘', '\'').replace('’', '\'')
         # strip trailing whitespace
         lines.append(line.rstrip())
 
