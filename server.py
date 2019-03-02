@@ -5,6 +5,8 @@ import govuk.content_schemas as schemas
 import gopher
 import asyncio
 import re
+import sys
+import traceback
 
 BASE_PATH_PATTERN = re.compile('^(/[a-zA-Z0-9\-]+)+/?$')
 
@@ -27,6 +29,7 @@ def handler(port):
                     request, f'This page is of type "{e.args[0]}", which is not supported.')
             except Exception as e:
                 print(f'Exception: {str(e)}')
+                traceback.print_exc(file=sys.stdout)
                 response = gopher.bad_content_message(
                     request, 'Something went wrong parsing the response from GOV.UK.')
         else:
