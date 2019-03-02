@@ -150,6 +150,12 @@ def parse_details_answer(details):
     return [markup.text(details['body'])]
 
 
+def parse_details_news_story(details):
+    """Parse a news_story content item details hash."""
+
+    return [markup.text(details['body'])]
+
+
 def parse_details_guide(details):
     """Parse a guide content item details hash."""
 
