@@ -1,4 +1,11 @@
 import html2text
+import enum
+
+
+class Elem(enum.Enum):
+    HEADING = enum.auto()
+    TEXT = enum.auto()
+    WEB_LINK = enum.auto()
 
 
 def heading(text):
@@ -6,7 +13,7 @@ def heading(text):
     """
 
     return {
-        'type': 'heading',
+        'type': Elem.HEADING,
         'text': text
     }
 
@@ -28,7 +35,7 @@ def text(html):
         lines.append(line.rstrip())
 
     return {
-        'type': 'text',
+        'type': Elem.TEXT,
         'text': '\n'.join(lines).strip(),
     }
 
@@ -38,7 +45,7 @@ def web_link(text, target):
     """
 
     return {
-        'type': 'web_link',
+        'type': Elem.WEB_LINK,
         'text': text,
         'target': target,
     }

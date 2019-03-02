@@ -1,4 +1,9 @@
-import markup.construct as m
+import markup
+from collections import namedtuple
+
+ContentItem = namedtuple(
+    'ContentItem', [
+        'title', 'description', 'updated_at', 'body'])
 
 
 class NoDocumentType(Exception):
@@ -25,7 +30,7 @@ def parse_raw(raw):
 
     - 'MalformedContentItem' if parsing fails
 
-    Returns the parsed content item.
+    Returns a 'ContentItem'.
     """
 
     if 'document_type' not in raw:
@@ -50,21 +55,21 @@ def parse_type_transaction(raw):
 
     body = []
     if 'introductory_paragraph' in details:
-        body.append(m.text(details['introductory_paragraph']))
+        body.append(markup.text(details['introductory_paragraph']))
     body.append(
-        m.web_link(
+        markup.web_link(
             details['start_button_text'],
             details['transaction_start_link']))
     if 'more_information' in details:
-        body.append(m.heading('More information'))
-        body.append(m.text(details['more_information']))
+        body.append(markup.heading('More information'))
+        body.append(markup.text(details['more_information']))
     if 'other_ways_to_apply' in details:
-        body.append(m.heading('Other ways to apply'))
-        body.append(m.text(details['other_ways_to_apply']))
+        body.append(markup.heading('Other ways to apply'))
+        body.append(markup.text(details['other_ways_to_apply']))
 
-    return {
-        'title': raw['title'],
-        'description': raw['description'],
-        'updated_at': raw['public_updated_at'],
-        'body': body,
-    }
+    return ContentItem(
+        title=raw['title'],
+        description=raw['description'],
+        updated_at=raw['public_updated_at'],
+        body=body,
+    )
