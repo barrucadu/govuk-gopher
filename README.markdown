@@ -1,6 +1,8 @@
 GOV.UK to Gopher
 ================
 
+[![asciicast](https://asciinema.org/a/231309.svg)](https://asciinema.org/a/231309)
+
 Gopher is a simple text-based protocol to browse information through a
 system of hierarchical menus.  Gopher has a number of advantages:
 
