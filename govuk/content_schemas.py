@@ -68,7 +68,21 @@ def parse_raw(raw):
 
 
 def parse_links(links):
-    """Parse a links hash.  Only some of the links are included."""
+    """Parse a links hash.  Only some of the links are included.
+
+    One of the included links is the parent.  There are three cases:
+
+    1. There is a 'parent' list, in which case we take the first one.
+
+    2. There is a 'parent_taxons' list, in which case we take the
+       first one.
+
+    3. There is no parent.
+
+    We don't treat the 'root_taxon' as a parent for consistency with
+    the mainstream browse pages.  The mainstream browse page sections
+    don't have a parent-link to the top-level browse page.
+    """
 
     def go(links, out_links, all_links):
         for link in links:
@@ -83,7 +97,8 @@ def parse_links(links):
 
     all_links = []
 
-    raw_parents = links.get('parent') or []
+    raw_parents = links.get('parent') or links.get(
+        'parent_taxons') or links.get('root_taxons') or []
     if raw_parents == []:
         parent = None
     else:
@@ -316,5 +331,23 @@ def parse_details_mainstream_browse_page(details, content_item):
     # This is the top-level browse page
     for link in content_item['links'].get('top_level_browse_pages') or []:
         body.append(markup.link(link['title'], link['base_path']))
+
+    return body
+
+
+def parse_details_taxon(details, content_item):
+    """Parse a taxon content item details hash.
+
+    Content is tagged to taxons, and is surfaced through search.  The
+    taxon content item doesn't directly refer to its children.  This
+    is essentially a simpler version of the mainstream_browse_page
+    type.
+    """
+
+    body = []
+
+    for result in fetch_raw_search_results(
+            {'part_of_taxonomy_tree': content_item['content_id']}).get('results') or []:
+        body.append(markup.link(result['title'], result['link']))
 
     return body
