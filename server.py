@@ -29,7 +29,9 @@ def fetch_and_render(ip, port, request):
         except schemas.NoDocumentType:
             response = gopher.bad_content_message(
                 request, 'Something went wrong parsing the response from GOV.UK.')
-        except schemas.MalformedContentItem:
+        except schemas.MalformedContentItem as e:
+            print(f'Exception: {str(e)}')
+            traceback.print_exc(file=sys.stdout)
             response = gopher.bad_content_message(
                 request, 'Something went wrong parsing the response from GOV.UK.')
         except Exception as e:
