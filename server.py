@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from govuk.api import fetch_content_item
+from govuk.content_api import fetch_content_item
 import govuk.content_schemas as schemas
 import gopher
 import asyncio
