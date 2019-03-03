@@ -267,7 +267,9 @@ def parse_details_mainstream_browse_page(details, content_item):
 
     1. There is a 'details.ordered_second_level_browse_pages', in
        which case this is a section with subsections in a given order
-       and the subsection details are in the 'links.children' hash.
+       and the subsection details may or may not be in the
+       'links.children' hash (if not the search API can be used to get
+       the title).
 
     2. There is a 'links.children', in which case this is a section
        with subsections in an arbitrary order.
@@ -297,7 +299,17 @@ def parse_details_mainstream_browse_page(details, content_item):
                 group_links.append(
                     markup.link(
                         link['title'],
-                        link['base_path']))
+                        base_path))
+            else:
+                search = fetch_raw_search_results(
+                    {'link': base_path}).get('results') or []
+                if search != []:
+                    group_links.append(
+                        markup.link(
+                            search[0]['title'],
+                            base_path
+                        )
+                    )
         if group_links != []:
             body.append(markup.heading(group['name']))
             body.extend(group_links)
