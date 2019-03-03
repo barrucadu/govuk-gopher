@@ -5,21 +5,6 @@ class BadMarkup(Exception):
     pass
 
 
-def usage_message(host, port):
-    """Print a message about how to use the server, with some example
-    pages.
-    """
-
-    return (
-        'iWelcome to the GOV.UK-to-Gopher Service\r\n'
-        'i\r\n'
-        'iRequest any path to get a rendition of that page on GOV.UK as a Gopher directory listing.\r\n'
-        'iFor example:\r\n'
-        f'1Tax your vehicle\t/vehicle-tax\t{host}\t{port}\r\n'
-        f'1The Civil Service code\t/government/publications/civil-service-code/the-civil-service-code\t{host}\t{port}\r\n'
-        f'1Ministry of Defence\t/government/organisations/ministry-of-defence\t{host}\t{port}\r\n')
-
-
 def generic_error(title, message):
     """Return a generic error 'page'.
     """

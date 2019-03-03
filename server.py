@@ -17,7 +17,7 @@ def fetch_and_render(ip, port, request):
     """
 
     if request in ['', '/']:
-        return gopher.usage_message(ip, port)
+        request = '/browse'
 
     if BASE_PATH_PATTERN.match(request):
         try:
