@@ -1,5 +1,6 @@
 import markup
 from collections import namedtuple
+from govuk.search_api import fetch_raw_search_results
 
 ContentItem = namedtuple(
     'ContentItem', [
@@ -54,7 +55,7 @@ def parse_raw(raw):
     try:
         details = raw.get('details') or {}
         links = raw.get('links') or {}
-        body = globals()[document_type_parser](details, links)
+        body = globals()[document_type_parser](details, raw)
         return ContentItem(
             title=raw['title'],
             description=raw.get('description') or '',
@@ -116,7 +117,7 @@ def parse_links(links):
     )
 
 
-def parse_details_transaction(details, _links):
+def parse_details_transaction(details, _content_item):
     """Parse a transaction content item details hash."""
 
     body = []
@@ -140,25 +141,25 @@ def parse_details_transaction(details, _links):
     return body
 
 
-def parse_details_html_publication(details, _links):
+def parse_details_html_publication(details, _content_item):
     """Parse an html_publication content item details hash."""
 
     return [markup.text(details['body'])]
 
 
-def parse_details_answer(details, _links):
+def parse_details_answer(details, _content_item):
     """Parse an answer content item details hash."""
 
     return [markup.text(details['body'])]
 
 
-def parse_details_news_story(details, _links):
+def parse_details_news_story(details, _content_item):
     """Parse a news_story content item details hash."""
 
     return [markup.text(details['body'])]
 
 
-def parse_details_guide(details, _links):
+def parse_details_guide(details, _content_item):
     """Parse a guide content item details hash."""
 
     body = []
@@ -170,7 +171,7 @@ def parse_details_guide(details, _links):
     return body
 
 
-def parse_details_organisation(details, _links):
+def parse_details_organisation(details, _content_item):
     """Parse an organisation content item details hash."""
 
     body = []
@@ -230,24 +231,49 @@ def parse_details_organisation(details, _links):
     return body
 
 
-def parse_details_mainstream_browse_page(details, links):
+def parse_details_mainstream_browse_page(details, content_item):
     """Parse a mainstream_browse_page content item details hash.
 
-    Retrieves page titles from the links hash.
+    There are two types of mainstream browse page: "sections", which
+    contain subsections; and "subsections", which contain content.
+    There's also the top-level "/browse" page which has a list of
+    sections.
+
+    Content can be tagged to a subsection in two ways:
+
+    1. There is a 'details.groups', in which case this is a mainstream
+       browse page with curated content, and the page details are in
+       the 'links.children' hash.
+
+    2. The search API finds things tagged to it.
+
+    If there is no tagged content, this is a section.  Now there are
+    three cases:
+
+    1. There is a 'details.ordered_second_level_browse_pages', in
+       which case this is a section with subsections in a given order
+       and the subsection details are in the 'links.children' hash.
+
+    2. There is a 'links.children', in which case this is a section
+       with subsections in an arbitrary order.
+
+    3. There is no 'links.children', in which case this is the
+       top-level "/browse" page and has a
+       'links.top_level_browse_pages'.
+
     """
 
     body = []
 
-    empty = True
-
     all_links = []
-    all_links.extend(links.get('children') or [])
-    all_links.extend(links.get('second_level_browse_pages') or [])
-    all_links.extend(links.get('top_level_browse_pages') or [])
+    all_links.extend(content_item['links'].get('children') or [])
+    all_links.extend(content_item['links'].get(
+        'second_level_browse_pages') or [])
 
     all_links_by_base_path = {link['base_path']: link for link in all_links}
     all_links_by_content_id = {link['content_id']: link for link in all_links}
 
+    # Check for a curated list of children
     for group in details.get('groups') or []:
         group_links = []
         for base_path in group['contents']:
@@ -260,24 +286,35 @@ def parse_details_mainstream_browse_page(details, links):
         if group_links != []:
             body.append(markup.heading(group['name']))
             body.extend(group_links)
-            empty = False
+    if body != []:
+        return body
 
-    second_level_browse_pages = []
+    # Check for a tagged list of children
+    prefix = '/browse/'
+    mbp_path = content_item['base_path'][len(prefix):]
+    for result in fetch_raw_search_results(
+            {'mainstream_browse_pages': mbp_path}).get('results') or []:
+        body.append(markup.link(result['title'], result['link']))
+    if body != []:
+        return body
+
+    # Check for an ordered list of subsections
     for content_id in details.get('ordered_second_level_browse_pages') or []:
         link = all_links_by_content_id.get(content_id)
         if link:
-            second_level_browse_pages.append(
+            body.append(
                 markup.link(link['title'], link['base_path']))
-    if second_level_browse_pages != []:
-        if not empty:
-            body.append(markup.heading('Subtopics'))
-        body.extend(second_level_browse_pages)
-        empty = False
+    if body != []:
+        return body
 
-    if empty:
-        links = links.get('second_level_browse_pages') or links.get(
-            'top_level_browse_pages') or []
-        for link in links:
-            body.append(markup.link(link['title'], link['base_path']))
+    # Check for an unordered list of subsections
+    for link in content_item['links'].get('second_level_browse_pages') or []:
+        body.append(markup.link(link['title'], link['base_path']))
+    if body != []:
+        return body
+
+    # This is the top-level browse page
+    for link in content_item['links'].get('top_level_browse_pages') or []:
+        body.append(markup.link(link['title'], link['base_path']))
 
     return body
