@@ -43,7 +43,7 @@ def wordwrap(string, colwidth=80):
     if string[0:4] == '  * ':
         string = string[4:]
         islist = True
-        colwidth = 76
+        colwidth = colwidth - 4
     else:
         islist = False
 
