@@ -74,14 +74,16 @@ def wordwrap(string, colwidth=80):
     return out
 
 
-def render(host, port, content_item):
+def render(host, port, content_item, colwidth=79):
     """Render a content item as a gopher menu.
     """
 
-    return sections_to_menu(content_item_to_sections(host, port, content_item))
+    sections = content_item_to_sections(
+        host, port, content_item, colwidth=colwidth)
+    return sections_to_menu(sections, colwidth=colwidth)
 
 
-def content_item_to_sections(host, port, content_item):
+def content_item_to_sections(host, port, content_item, colwidth=79):
     """Turn a content item into a list of sections.
     """
 
@@ -94,7 +96,7 @@ def content_item_to_sections(host, port, content_item):
 
     if content_item.description != '':
         chunk = []
-        for line in wordwrap(content_item.description):
+        for line in wordwrap(content_item.description, colwidth=colwidth):
             chunk.append(f'i{line}\r\n')
         sections.append([chunk])
 
@@ -110,7 +112,7 @@ def content_item_to_sections(host, port, content_item):
         elif item['type'] == Elem.TEXT:
             chunk = []
             for line in item['text'].split('\n'):
-                for lline in wordwrap(line):
+                for lline in wordwrap(line, colwidth=colwidth):
                     chunk.append(f'i{lline}\r\n')
             chunks.append(chunk)
         elif item['type'] == Elem.LINK:
@@ -146,13 +148,13 @@ def content_item_to_sections(host, port, content_item):
     return sections
 
 
-def sections_to_menu(sections):
+def sections_to_menu(sections, colwidth=79):
     """Turn a list of sections into a Gopher menu.
     """
 
     section_divider = [
         'i\r\n',
-        'i-------------------------------------------------------------------------------\r\n',
+        'i' + ('-' * colwidth) + '\r\n',
         'i\r\n',
     ]
 
