@@ -78,15 +78,14 @@ def render(host, port, content_item):
     """Render a content item as a gopher menu.
     """
 
+    return sections_to_menu(content_item_to_sections(host, port, content_item))
+
+
+def content_item_to_sections(host, port, content_item):
+    """Turn a content item into a list of sections.
+    """
+
     sections = []
-
-    section_divider = [
-        f'i\r\n',
-        f'i-------------------------------------------------------------------------------\r\n',
-        f'i\r\n',
-    ]
-
-    chunk_divider = [f'i\r\n']
 
     sections.append([[
         f'i{content_item.title}\r\n',
@@ -143,6 +142,21 @@ def render(host, port, content_item):
     do_links('Related organisations', content_item.links.organisations)
     do_links('Related items', content_item.links.related_items)
     sections.append(chunks)
+
+    return sections
+
+
+def sections_to_menu(sections):
+    """Turn a list of sections into a Gopher menu.
+    """
+
+    section_divider = [
+        'i\r\n',
+        'i-------------------------------------------------------------------------------\r\n',
+        'i\r\n',
+    ]
+
+    chunk_divider = ['i\r\n']
 
     menu = []
 
