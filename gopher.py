@@ -127,45 +127,21 @@ def render(host, port, content_item):
     sections.append(chunks)
 
     chunks = []
+
+    def do_links(title, links):
+        render_links_as_chunk(
+            title,
+            links,
+            host,
+            port,
+            chunks)
+
     if content_item.links.parent is not None:
-        chunks.append(['iParent:\r\n'])
-        chunks.append(
-            render_links_as_chunk(
-                host,
-                port,
-                [content_item.links.parent]))
-
-    if content_item.links.explore != []:
-        chunks.append(['iExplore this topic:\r\n'])
-        chunks.append(
-            render_links_as_chunk(
-                host,
-                port,
-                content_item.links.explore))
-
-    if content_item.links.people != []:
-        chunks.append(['iRelated people:\r\n'])
-        chunks.append(
-            render_links_as_chunk(
-                host,
-                port,
-                content_item.links.people))
-
-    if content_item.links.organisations != []:
-        chunks.append(['iRelated organisations:\r\n'])
-        chunks.append(
-            render_links_as_chunk(
-                host,
-                port,
-                content_item.links.organisations))
-
-    if content_item.links.related_items != []:
-        chunks.append(['iRelated items:\r\n'])
-        chunks.append(
-            render_links_as_chunk(
-                host,
-                port,
-                content_item.links.related_items))
+        do_links('Parent', [content_item.links.parent])
+    do_links('Explore this topic', content_item.links.explore)
+    do_links('Related people', content_item.links.people)
+    do_links('Related organisations', content_item.links.organisations)
+    do_links('Related items', content_item.links.related_items)
     sections.append(chunks)
 
     menu = []
@@ -185,10 +161,16 @@ def render(host, port, content_item):
     return ''.join(menu)
 
 
-def render_links_as_chunk(host, port, links):
+def render_links_as_chunk(title, links, host, port, chunks):
     """Render some links as a chunk."""
+
+    if links == []:
+        return
 
     chunk = []
     for link in links:
-        chunk.append(f'1{link.title}\t{link.base_path}\t{host}\t{port}\r\n')
-    return chunk
+        chunk.append(
+            f'1{link.title}\t{link.base_path}\t{host}\t{port}\r\n')
+
+    chunks.append([f'i{title}:\r\n'])
+    chunks.append(chunk)
